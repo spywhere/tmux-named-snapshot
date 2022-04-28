@@ -9,6 +9,7 @@ main() {
   local name="$1"
   local resurrect_restore_script_path="$(get_tmux_option "$resurrect_restore_path_option" "")"
   if [ -n "$resurrect_restore_script_path" ]; then
+    tmux display-message "Restoring snapshot '$name'..."
     local last_file="$(last_resurrect_file)"
     local original_path="$(last_resurrect_path)"
     local name_path="$(resurrect_dir)/$name"
@@ -20,6 +21,7 @@ main() {
       ln -fs "$original_path" "$last_file"
       echo "restored"
     fi
+    tmux display-message "Snapshot '$name' restored"
   fi
 }
 

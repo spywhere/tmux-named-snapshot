@@ -9,6 +9,7 @@ main() {
   local name="$1"
   local resurrect_save_script_path="$(get_tmux_option "$resurrect_save_path_option" "")"
   if [ -n "$resurrect_save_script_path" ] && [ -n "$name" ]; then
+    tmux display-message "Saving snapshot '$name'..."
     local last_file="$(last_resurrect_file)"
     local original_path="$(last_resurrect_path)"
     local name_path="$(resurrect_dir)/$name"
@@ -23,6 +24,8 @@ main() {
     if [ -n "$original_path" ]; then
       ln -fs "$original_path" "$last_file"
     fi
+
+    tmux display-message "Snapshot '$name' saved"
   fi
 }
 
