@@ -4,21 +4,57 @@ This plugin will allow you to save and restore
 [tmux-resurrect](https://github.com/tmux-plugins/tmux-resurrect) snapshots
 into its own separate snapshot, making it easy to keep track of tmux session setup.
 
-### Key Bindings
+## Getting Started
+
+This plugin is shipped with these key bindings
+
+- `Prefix + Ctrl-m`: Save 'manual' snapshot
+- `Prefix + M`: Prompt for a name and save the snapshot under that name
+- `Prefix + Ctrl-n`: Restore 'manual' snapshot
+- `Prefix + N`: Prompt for a name and restore the snapshot by that name
+
+Check out [Configurations](#configurations) section below to customize the
+key bindings and any additional options.
+
+## Configurations
 
 - `@named-snapshot-save`  
 Description: A list of key mapping to be bound to save command  
-Default: `C-m:manual`  
+Default: `C-m:manual M:*`  
 Values: a space separated keymap, in which consists of comma separated strings
 - `@named-snapshot-restore`  
 Description: A list of key mapping to be bound to restore command  
-Default: `C-n:manual`  
+Default: `C-n:manual N:*`  
 Values: a space separated keymap, in which consists of comma separated strings
 
 Each mapping should consists of key and its corresponding snapshot name. So
 a mapping of `C-m:manual` will map a `manual` snapshot to `C-m` key binding.
 
+A special snapshot name `*` will prompt for a snapshot name before
+performing the action.
+
 You can always map multiple key bindings to the same snapshot name.
+
+### Examples
+
+To setup the key bindings, the configuration should be put in `.tmux.conf`
+file.
+
+For example,
+
+```
+set -g @named-snapshot-save 'C-m:manual M:* C-d:dev'
+set -g @named-snapshot-restore 'C-n:manual N:* D:dev'
+```
+
+will setup the following key bindings
+
+- `Prefix + Ctrl-m`: Save 'manual' snapshot
+- `Prefix + M`: Prompt for a name and save the snapshot under that name
+- `Prefix + Ctrl-d`: Save 'dev' snapshot
+- `Prefix + Ctrl-n`: Restore 'manual' snapshot
+- `Prefix + N`: Prompt for a name and restore the snapshot by that name
+- `Prefix + D`: Restore 'dev' snapshot
 
 ## Installation
 
