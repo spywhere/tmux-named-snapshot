@@ -12,7 +12,7 @@ main() {
     tmux display-message "Saving snapshot '$name'..."
     local last_file="$(last_resurrect_file)"
     local original_path="$(last_resurrect_path)"
-    local name_path="$(resurrect_dir)/$name"
+    local name_path="$(snapshot_dir)/$name"
 
     "$resurrect_save_script_path" "quiet" >/dev/null 2>&1
     local last_snapshot="$(last_resurrect_path)"

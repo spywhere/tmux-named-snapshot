@@ -34,6 +34,11 @@ resurrect_dir() {
   fi
 }
 
+snapshot_dir() {
+  local path="$(get_tmux_option "$snapshot_dir_option" "$(resurrect_dir)")"
+  echo "$path" | sed "s,\$HOME,$HOME,g; s,\$HOSTNAME,$(hostname),g; s,\~,$HOME,g"
+}
+
 last_resurrect_file() {
   echo "$(resurrect_dir)/last"
 }

@@ -12,7 +12,7 @@ main() {
     tmux display-message "Restoring snapshot '$name'..."
     local last_file="$(last_resurrect_file)"
     local original_path="$(last_resurrect_path)"
-    local name_path="$(resurrect_dir)/$name"
+    local name_path="$(snapshot_dir)/$name"
 
     if [ -r "$name_path" ]; then
       local last_snapshot="$(readlink "$name_path")"

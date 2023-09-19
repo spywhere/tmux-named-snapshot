@@ -35,6 +35,12 @@ performing the action.
 
 You can always map multiple key bindings to the same snapshot name.
 
+- `@named-snapshot-dir`  
+Description: A path (without a trailing slash) to the directory for storing
+named snapshots (missing directory will **NOT** be created automatically)  
+Default: _Empty_ (default to `@resurrect_dir` option)  
+Value: a string to be used as a path
+
 ### Examples
 
 To setup the key bindings, the configuration should be put in `.tmux.conf`
