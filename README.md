@@ -21,11 +21,11 @@ key bindings and any additional options.
 - `@named-snapshot-save`  
 Description: A list of key mapping to be bound to save command  
 Default: `C-m:manual M:*`  
-Values: a space separated keymap, in which consists of comma separated strings
+Values: a space separated keymap, in which consists of colon separated strings
 - `@named-snapshot-restore`  
 Description: A list of key mapping to be bound to restore command  
 Default: `C-n:manual N:*`  
-Values: a space separated keymap, in which consists of comma separated strings
+Values: a space separated keymap, in which consists of colon separated strings
 
 Each mapping should consists of key and its corresponding snapshot name. So
 a mapping of `C-m:manual` will map a `manual` snapshot to `C-m` key binding.
