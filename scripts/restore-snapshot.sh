@@ -14,7 +14,7 @@ main() {
     local original_path="$(last_resurrect_path)"
     local name_path="$(snapshot_dir)/$name"
 
-    if [ -r "$name_path" ]; then
+    if [[ -L "$name_path" ]]; then
       local last_snapshot="$(readlink "$name_path")"
       ln -fs "$last_snapshot" "$last_file"
       "$resurrect_restore_script_path" "quiet" >/dev/null 2>&1
