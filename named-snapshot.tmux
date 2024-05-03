@@ -8,7 +8,12 @@ source "$CURRENT_DIR/scripts/variables.sh"
 bind_prompt_key() {
   local action="$1"
   local key="$2"
-  tmux bind-key "$key" command-prompt -p 'Snapshot Name:' "run-shell '$CURRENT_DIR/scripts/$action-snapshot.sh %1'"
+  if [[ "$action" == "save" ]]; then
+    local prompt='Save Snapshot as:'
+  else
+    local prompt='Restore Snapshot:'
+  fi
+  tmux bind-key "$key" command-prompt -p "$prompt" "run-shell '$CURRENT_DIR/scripts/$action-snapshot.sh %1'"
 }
 
 bind_key() {
