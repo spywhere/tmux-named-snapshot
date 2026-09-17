@@ -24,6 +24,19 @@ bind_prompt_key() {
   fi
 }
 
+bind_restore_menu_key() {
+  local key="$1"
+  local switch_client="$2"
+  local client_name=""
+
+  if [ -n "$switch_client" ]; then
+    client_name="$(echo "$switch_client" | cut -d':' -f2)"
+    tmux bind-key -T "$client_name" "$key" run-shell "$CURRENT_DIR/scripts/snapshot-menu.sh restore"
+  else
+    tmux bind-key "$key" run-shell "$CURRENT_DIR/scripts/snapshot-menu.sh restore"
+  fi
+}
+
 bind_key() {
   local action="$1"
   local key="$2"
@@ -32,6 +45,8 @@ bind_key() {
 
   if test "$name" = "*"; then
     bind_prompt_key "$@"
+  elif test "$action" = "restore" && test "$name" = "?"; then
+    bind_restore_menu_key "$key" "$switch_client"
   else
     if [ -n "$switch_client" ]; then
       local client_name="$(echo "$switch_client" | cut -d':' -f2)"
@@ -72,6 +87,21 @@ set_restore_bindings() {
   done
 }
 
+set_manage_binding() {
+  local switch_client="$1"
+  local key="$(get_tmux_option "$named_manage_option" "$default_manage_option")"
+  local client_name=""
+
+  [ -n "$key" ] || return 0
+
+  if [ -n "$switch_client" ]; then
+    client_name="$(echo "$switch_client" | cut -d':' -f2)"
+    tmux bind-key -T "$client_name" "$key" run-shell "$CURRENT_DIR/scripts/snapshot-menu.sh manage"
+  else
+    tmux bind-key "$key" run-shell "$CURRENT_DIR/scripts/snapshot-menu.sh manage"
+  fi
+}
+
 main() {
   local switch_client="$(get_tmux_option "$switch_client_option" "$default_switch_client_option")"
   if [ -n "$switch_client" ]; then
@@ -80,6 +110,7 @@ main() {
 
   set_save_bindings "$switch_client"
   set_restore_bindings "$switch_client"
+  set_manage_binding "$switch_client"
 }
 
 main

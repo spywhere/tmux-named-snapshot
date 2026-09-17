@@ -1,136 +1,181 @@
 # tmux-named-snapshot
 
-This plugin will allow you to save and restore
+This plugin allows you to save and restore
 [tmux-resurrect](https://github.com/tmux-plugins/tmux-resurrect) snapshots
-into its own separate snapshot, making it easy to keep track of tmux session setup.
+under stable names, making it easy to keep track of different tmux session
+setups.
+
+It also provides native tmux menus to list, restore, rename, and delete named
+snapshots.
 
 ## Getting Started
 
-This plugin is shipped with these key bindings
+This plugin is shipped with these key bindings:
 
-- `Prefix + Ctrl-m`: Save 'manual' snapshot
-- `Prefix + M`: Prompt for a name and save the snapshot under that name
-- `Prefix + Ctrl-n`: Restore 'manual' snapshot
-- `Prefix + N`: Prompt for a name and restore the snapshot by that name
+- `Prefix + Ctrl-m` (or `Prefix + Enter`): Save the `manual` snapshot
+- `Prefix + M`: Prompt for a name and save a snapshot under that name
+- `Prefix + Ctrl-n`: Restore the `manual` snapshot
+- `Prefix + N`: Prompt for a name and restore that snapshot
+- `Prefix + R`: Select a snapshot from a list and restore it
+- `Prefix + S`: Open the snapshot management menu
 
-Check out [Configurations](#configurations) section below to customize the
-key bindings and any additional options.
+The management menu lists named snapshots. Selecting one opens an actions menu
+with:
+
+- Restore
+- Rename
+- Delete
+
+Deleting a named snapshot also deletes its underlying `tmux-resurrect` save
+file when no other named snapshot points to that same file. If the deleted
+file was the target of tmux-resurrect's `last` symlink, `last` is repointed to
+the newest remaining `tmux_resurrect_*.txt` file. If no save files remain,
+`last` is removed, which is the same state as a fresh tmux-resurrect
+installation before its first save.
+
+Check the [Configurations](#configurations) section below to customize the key
+bindings and other options.
 
 ## Configurations
 
-- `@named-snapshot-save`  
-Description: A list of key mapping to be bound to save command  
-Default: `C-m:manual M:*`  
-Values: a space separated keymap, in which consists of colon separated strings
-- `@named-snapshot-restore`  
-Description: A list of key mapping to be bound to restore command  
-Default: `C-n:manual N:*`  
-Values: a space separated keymap, in which consists of colon separated strings
+- `@named-snapshot-save`
+Description: A list of key mappings to be bound to the save command
+Default: `C-m:manual Enter:manual M:*`
+Values: A space-separated list of colon-separated `key:snapshot` mappings
 
-Each mapping should consists of key and its corresponding snapshot name. So
-a mapping of `C-m:manual` will map a `manual` snapshot to `C-m` key binding.
+- `@named-snapshot-restore`
+Description: A list of key mappings to be bound to the restore command
+Default: `C-n:manual N:* R:?`
+Values: A space-separated list of colon-separated `key:snapshot` mappings
 
-A special snapshot name `*` will prompt for a snapshot name before
-performing the action.
+Each mapping consists of a key and its corresponding snapshot name. For
+example, `C-m:manual` maps the `manual` snapshot to `C-m`.
 
-You can always map multiple key bindings to the same snapshot name.
+Two special snapshot names are available in mappings:
 
-- `@named-snapshot-switch-client`  
+- `*`: Prompt for a snapshot name before performing the action
+- `?`: For restore mappings only, open the snapshot selection menu
+
+You can map multiple key bindings to the same snapshot name.
+
+- `@named-snapshot-manage`
+Description: Key binding used to open the snapshot management menu
+Default: `S`
+Value: A tmux key name
+
+- `@named-snapshot-switch-client`
 Description: A specification of an optional
-[switch-client](<https://man7.org/linux/man-pages/man1/tmux.1.html#:~:text=SIGTSTP%20(tty%20stop).-,switch%2Dclient,-%5B%2DElnprZ%5D%20%5B>)
-keybinding to define all specified save/restore bindings in a separate "namespace".  
-Default: _Empty_ (not used by default)  
-Values: a colon separated strings with "key:table_name"
+[switch-client](https://man7.org/linux/man-pages/man1/tmux.1.html)
+key binding to define all save, restore, and management bindings in a separate
+key table
+Default: _Empty_ (not used by default)
+Values: A colon-separated `key:table_name` string
 
-- `@named-snapshot-dir`  
-Description: A path (without a trailing slash) to the directory for storing
-named snapshots (missing directory will **NOT** be created automatically)  
-Default: _Empty_ (default to `@resurrect_dir` option)  
-Value: a string to be used as a path
+- `@named-snapshot-dir`
+Description: A path, without a trailing slash, used to store named snapshot
+symlinks. The directory is **not** created automatically.
+Default: _Empty_ (defaults to the `@resurrect-dir` option)
+Value: A filesystem path
+
+Snapshot names must be single path components. Empty names, `.`, `..`, `last`,
+names containing `/`, and names containing line breaks are rejected.
 
 ### Examples
 
-To setup the key bindings, the configuration should be put in `.tmux.conf`
-file.
+To set up key bindings, put the configuration in `.tmux.conf`.
 
-For example,
+For example:
 
-```
+```tmux
 set -g @named-snapshot-save 'C-m:manual M:* C-d:dev'
-set -g @named-snapshot-restore 'C-n:manual N:* D:dev'
+set -g @named-snapshot-restore 'C-n:manual N:* R:? D:dev'
+set -g @named-snapshot-manage 'S'
 ```
 
-will setup the following key bindings
+This creates the following bindings:
 
-- `Prefix + Ctrl-m`: Save 'manual' snapshot
+- `Prefix + Ctrl-m`: Save the `manual` snapshot
 - `Prefix + M`: Prompt for a name and save the snapshot under that name
-- `Prefix + Ctrl-d`: Save 'dev' snapshot
-- `Prefix + Ctrl-n`: Restore 'manual' snapshot
+- `Prefix + Ctrl-d`: Save the `dev` snapshot
+- `Prefix + Ctrl-n`: Restore the `manual` snapshot
 - `Prefix + N`: Prompt for a name and restore the snapshot by that name
-- `Prefix + D`: Restore 'dev' snapshot
+- `Prefix + R`: Select a snapshot from a list and restore it
+- `Prefix + D`: Restore the `dev` snapshot
+- `Prefix + S`: Open the snapshot management menu
 
-You can also define a separate "namespace" for all save/restore bindings using `switch-client`
-feature in `tmux`.
+You can also define a separate key table for all named-snapshot bindings using
+tmux's `switch-client` feature.
 
-To do this, define the `@named-snapshot-switch-client` parameter with a value of type `N:tns`,
-where `N` (stands for `Named`) is the preferred key to enter "Named Snapshot Mode" and `tns`
-(stands for `tmux-named-snapshot`) is the name of the key-table for the switch-client.
+For example:
 
-For example,
-
-```
+```tmux
 set -g @named-snapshot-switch-client 'N:tns'
 set -g @named-snapshot-save 'm:manual p:* d:dev'
-set -g @named-snapshot-restore 'M:manual P:* D:dev'
+set -g @named-snapshot-restore 'M:manual P:* R:? D:dev'
+set -g @named-snapshot-manage 'S'
 ```
 
-will setup the following key bindings
+This creates:
 
-- `Prefix + N`: To enter "Named Snapshot Mode"
+- `Prefix + N`: Enter `Named Snapshot Mode`
 
 While in this mode:
 
-- `m`: Save 'manual' snapshot
-- `p`: Prompt for a name and save the snapshot under that name
-- `d`: Save 'dev' snapshot
-- `M`: Restore 'manual' snapshot
-- `P`: Prompt for a name and restore the snapshot by that name
-- `D`: Restore 'dev' snapshot
+- `m`: Save the `manual` snapshot
+- `p`: Prompt for a name and save a snapshot
+- `d`: Save the `dev` snapshot
+- `M`: Restore the `manual` snapshot
+- `P`: Prompt for a name and restore a snapshot
+- `R`: Select a snapshot from a list and restore it
+- `D`: Restore the `dev` snapshot
+- `S`: Open the snapshot management menu
 
 ## Installation
 
 ### Requirements
 
-Please note that this plugin utilize multiple unix tools to deliver its
-functionalities (most of these tools should be already installed on most unix systems)
+- [tmux-resurrect](https://github.com/tmux-plugins/tmux-resurrect)
+- Bash
+- tmux 3.0 or later for the native `display-menu` snapshot menus
+
+The existing direct save and restore commands do not depend on
+`display-menu`, but the list and management features do.
+
+The plugin also uses standard Unix tools that are normally already installed:
 
 - `sed`
 - `cut`
 - `readlink`
 - `cmp`
+- `ln`
+- `rm`
+- `mv`
 
 ### Using [TPM](https://github.com/tmux-plugins/tpm)
 
-```
+```tmux
 set -g @plugin 'spywhere/tmux-named-snapshot'
 ```
 
 ### Manual
 
-Clone the repo
+Clone the repository:
 
-```
-$ git clone https://github.com/spywhere/tmux-named-snapshot ~/target/path
+```sh
+git clone https://github.com/spywhere/tmux-named-snapshot ~/target/path
 ```
 
-Then add this line into your `.tmux.conf`
+Then add this line to `.tmux.conf`:
 
-```
+```tmux
 run-shell ~/target/path/named-snapshot.tmux
 ```
 
-Once you reloaded your tmux configuration, all the format strings in the status
-bar should be updated automatically.
+Reload the tmux configuration:
+
+```sh
+tmux source-file ~/.tmux.conf
+```
 
 ## License
 
